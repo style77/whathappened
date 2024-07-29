@@ -1,0 +1,4 @@
+rtests/
+dist/
+postgres_data/
+.env
