@@ -26,7 +26,7 @@ export const LeftSidebar: React.FC = () => {
                         <NavLink
                             end
                             to={route.path}
-                            className={({ isActive }) => `${isActive ? 'font-semibold bg-base-200' : 'font-normal'}`}
+                            className={({ isActive }) => `${isActive ? 'font-semibold bg-gray-100' : 'font-normal'}`}
                         >
                             {<route.icon className="h-6 w-6" />} {route.name}
                             {location.pathname === route.path ? (
