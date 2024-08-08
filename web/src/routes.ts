@@ -1,6 +1,7 @@
 import { Dashboard } from "./pages/dashboard";
 import { Login, Register } from "./pages/auth";
-import { HomeIcon, UserIcon } from '@heroicons/react/24/outline';
+import { HomeIcon, KeyIcon, UserIcon } from '@heroicons/react/24/outline';
+import { Keys } from "./pages/keys";
 
 type Route = {
     path: string;
@@ -9,7 +10,7 @@ type Route = {
     needsAuth: boolean;
     component: React.FC;
     title: string;
-    showInSidebar?: boolean;
+    showInSidebar: boolean;
 }
 
 const PROJECT_NAME = 'whathappened'
@@ -41,5 +42,14 @@ export const routes: Route[] = [
         component: Register,
         title: `Sign Up - ${PROJECT_NAME}`,
         showInSidebar: false
+    },
+    {
+        path: '/keys',
+        name: 'Keys',
+        icon: KeyIcon,
+        needsAuth: true,
+        component: Keys,
+        title: `Keys - ${PROJECT_NAME}`,
+        showInSidebar: true
     }
 ]
