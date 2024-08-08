@@ -10,11 +10,16 @@ import { UserIcon } from '@heroicons/react/24/outline'
 
 
 export const Header: React.FC = () => {
+    const [pageTitle, setPageTitle] = useState<string>(document.title.split('-')[0])
     const { mutate: logout } = useLogout()
 
     const logoutUser = () => {
         logout()
     }
+
+    useEffect(() => {
+        setPageTitle(document.title.split('-')[0])
+    }, [document.title]);
 
     return (
         <>
@@ -22,7 +27,7 @@ export const Header: React.FC = () => {
                 <div className="flex-1">
                     <label htmlFor="left-sidebar-drawer" className="btn btn-primary drawer-button lg:hidden">
                         <Bars3Icon className="h-5 inline-block w-5" /></label>
-                    <h1 className="text-2xl font-semibold ml-2">{document.title.split('-')[0]}</h1>
+                    <h1 className="text-2xl font-semibold ml-2">{pageTitle}</h1>
                 </div>
 
                 <div className="flex-none ">
