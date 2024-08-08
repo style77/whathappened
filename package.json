@@ -1,0 +1,16 @@
+{
+  "name": "whathappened",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "api:build": "cd api && nest build",
+    "api:dev": "cd api && nest start --watch",
+    "api:format": "cd api && prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "api:prod": "cd api && node dist/main",
+    "api:debug": "cd api && nest start --debug --watch",
+    "web:dev": "cd web && node -e 'require(\"child_process\").execSync(process.env.npm_execpath + \" run dev\", {stdio: \"inherit\"})'",
+    "web:start": "cd web && node -e 'require(\"child_process\").execSync(process.env.npm_execpath + \" run start\", {stdio: \"inherit\"})'",
+    "web:build": "cd web && node -e 'require(\"child_process\").execSync(process.env.npm_execpath + \" run build\", {stdio: \"inherit\"})'",
+    "web:refine": "cd web && node -e 'require(\"child_process\").execSync(process.env.npm_execpath + \" run refine\", {stdio: \"inherit\"})'"
+  }
+}
