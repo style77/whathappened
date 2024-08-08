@@ -29,6 +29,9 @@ axiosInstance.defaults.withCredentials = true;
 export { axiosInstance };
 
 const resources = [
+  {
+    name: "keys"
+  }
 ]
 
 function App() {
@@ -47,6 +50,7 @@ function App() {
               useNewQueryKeys: true,
               projectId: "VuxnYh-VgBPqU-NOWti4",
             }}
+            resources={resources}
           >
             <Routes>
               <Route index element={<WelcomePage />} />
