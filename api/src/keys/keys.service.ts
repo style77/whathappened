@@ -1,8 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Key } from './entities/key.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
+
+interface QueryParams {
+    page: number;
+    limit: number;
+    sort: string;
+    order: 'ASC' | 'DESC';
+    filter?: string;
+  }
 
 @Injectable()
 export class KeysService {
@@ -28,9 +36,21 @@ export class KeysService {
         return this.keysRepository.findOne({ where: { key } });
     }
 
-    async findAllUserKeys(user: User): Promise<Key[]> {
-        return this.keysRepository.find({ where: { user } });
-    }
+    async findAllUserKeys(user: User, params: QueryParams): Promise<Key[]> {
+        const { page, limit, sort, order, filter } = params;
+        const where: any = { user };
+    
+        if (filter) {
+          where.keyName = Like(`%${filter}%`);
+        }
+    
+        return this.keysRepository.find({
+          where,
+          order: { [sort]: order },
+          skip: (page - 1) * limit,
+          take: limit,
+        });
+      }
 
     async deleteKey(key: string): Promise<void> {
         await this.keysRepository.delete({ key });
