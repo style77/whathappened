@@ -60,11 +60,8 @@ export class KeysController {
     const referer = req.headers.referer || req.headers.origin;
 
     const result = await this.keysService.verifyKey(apiKey, referer);
-    if (!result) {
-      throw new NotFoundException('Domain not allowed.');
-    }
     return {
-      success: true,
+      success: result,
     };
   }
 }
