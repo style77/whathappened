@@ -1,0 +1,5 @@
+[build]
+entry = "src/index.ts"
+outdir = "dist"
+outfile = "index.js"
+format = "esm"

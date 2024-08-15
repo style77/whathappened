@@ -1,0 +1,21 @@
+{
+  "name": "whathappened",
+  "version": "0.0.1",
+  "description": "The simplest way to identify how your users f***ed up.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/index.ts --outdir dist --outfile index.js"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

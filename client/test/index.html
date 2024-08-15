@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatHappened TEST</title>
+</head>
+
+<body>
+    <p>Test</p>
+    <button id="test">Test</button>
+    <button id="crash">Crash</button>
+    <input type="text" id="input" />
+    <button id="submit">Submit</button>
+
+    <script src="../dist/index.js" public-key="123" type="module" id="whathappened-script"></script>
+    <script>
+        const test = document.getElementById('test');
+        const crash = document.getElementById('crash');
+        const input = document.getElementById('input');
+        const submit = document.getElementById('submit');
+
+        test.addEventListener('click', () => {
+            console.log('Test');
+            // window.whatHappened.log('Test');
+        });
+
+        crash.addEventListener('click', () => {
+            console.log('Crash');
+            // window.whatHappened.log('Crash');
+            throw new Error('Crash');
+        });
+
+        submit.addEventListener('click', () => {
+            console.log('Submit');
+            // window.whatHappened.log('Submit', { value: input.value });
+        });
+    </script>
+</body>
+
+</html>
