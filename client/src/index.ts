@@ -161,6 +161,8 @@ class WhatHappened implements IWhatHappened {
                 },
                 time: {
                     startedAt: this.sessionStartedAt,
+                    endedAt: Date.now(),
+                    duration: Date.now() - this.sessionStartedAt,
                 }
             },
             mouseMovements: data.mouseMovements,
