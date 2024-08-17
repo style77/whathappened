@@ -21,7 +21,7 @@ export class ReportController {
   constructor(
     private reportService: ReportService,
     private keysService: KeysService,
-  ) {}
+  ) { }
 
   @UseGuards(PublicKeyGuard)
   @Post('/')
@@ -35,6 +35,11 @@ export class ReportController {
 
     if (!publicKey) {
       return response.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const origin = request.headers['origin'] as string;
+    if (!publicKey.allowed_domains.includes(origin)) {
+      return response.status(403).json({ message: 'Forbidden origin' });
     }
 
     const error = await this.reportService.getOrCreateError(
