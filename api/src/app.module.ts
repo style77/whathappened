@@ -7,6 +7,8 @@ import { User } from './users/entities/user.entity';
 import { KeysModule } from './keys/keys.module';
 import { Key } from './keys/entities/key.entity';
 import { DynamicCorsMiddleware } from './middlewares/dynamic-cors.middleware';
+import { VisualizerModule } from './microservices/visualizer/visualizer.module';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { DynamicCorsMiddleware } from './middlewares/dynamic-cors.middleware';
     AuthModule,
     UsersModule,
     KeysModule,
+    VisualizerModule,
+    ReportModule,
   ],
 })
 export class AppModule implements NestModule {
