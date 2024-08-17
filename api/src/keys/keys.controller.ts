@@ -21,21 +21,15 @@ export class KeysController {
 
   @UseGuards(JwtAuthGuard)
   @Get('/')
-  list(
+  async list(
     @Req() req,
-    @Query('page') page: number = 1,
     @Query('limit') limit: number = 10,
-    @Query('sort') sort: string = 'id',
-    @Query('order') order: 'ASC' | 'DESC' = 'ASC',
-    @Query('filter') filter?: string,
+    @Query('offset') offset: number = 0,
   ) {
     const user: any = req.user;
-    return this.keysService.findAllUserKeys(user, {
-      page,
+    return await this.keysService.findAllUserKeys(user, {
       limit,
-      sort,
-      order,
-      filter,
+      offset,
     });
   }
 
