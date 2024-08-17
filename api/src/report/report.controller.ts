@@ -37,11 +37,6 @@ export class ReportController {
       return response.status(401).json({ message: 'Unauthorized' });
     }
 
-    const origin = request.headers['origin'] as string;
-    if (!publicKey.allowed_domains.includes(origin)) {
-      return response.status(403).json({ message: 'Forbidden origin' });
-    }
-
     const error = await this.reportService.getOrCreateError(
       createReportDto.error.id,
       createReportDto.error.message,
