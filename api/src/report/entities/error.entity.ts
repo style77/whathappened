@@ -49,7 +49,7 @@ export class Error {
   @OneToMany(() => SessionError, (sessionError) => sessionError.error)
   sessionErrors: SessionError[];
 
-  @ManyToOne(() => Key, { nullable: true })
+  @ManyToOne(() => Key)
   @JoinColumn({ name: 'key_id' })
   key: Key;
 }
