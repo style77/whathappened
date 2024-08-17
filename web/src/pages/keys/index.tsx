@@ -1,30 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HttpError, useTable } from "@refinedev/core";
 import { useModalForm } from "@refinedev/react-hook-form";
-
 import { Layout } from "../../components/dashboard/Layout";
 import { IKey } from "../../interfaces";
-import { MinusCircleIcon, MinusIcon } from "@heroicons/react/24/outline";
-
-
+import { MinusIcon } from "@heroicons/react/24/outline";
 
 export const Keys: React.FC = () => {
-    const { tableQueryResult } = useTable<IKey>({})
+    const { tableQueryResult } = useTable<IKey>({
+        resource: "keys"
+    });
 
     const {
         formState: { errors },
         refineCore: { onFinish, formLoading },
         modal: { visible: visibleKeyCreateModal, close: closeKeyCreateModal, show: showKeyCreateModal },
-        register: registerKeyCreate,
+        register,
+        setValue,
+        getValues,
         handleSubmit: handleKeyCreate,
         saveButtonProps,
     } = useModalForm<IKey, HttpError, IKey>({
-        refineCoreProps: { action: "create" },
+        refineCoreProps: { action: "create", resource: "keys" },
     });
 
-    const handleKeyCreation = (e: React.FormEvent) => {
-        handleKeyCreate(e);
-    }
+    useEffect(() => {
+        // Initialize allowed_domains to an empty array if it's not already set
+        if (!getValues("allowed_domains")) {
+            setValue("allowed_domains", []);
+        }
+    }, [setValue, getValues]);
+
+    const handleKeyCreation = handleKeyCreate((values: IKey) => {
+        console.log(values); // Check if allowed_domains is correctly populated
+        onFinish(values);
+    });
 
     return (
         <Layout>
@@ -49,23 +58,29 @@ export const Keys: React.FC = () => {
                         {tableQueryResult.data?.data.map((record) => (
                             <tr key={record.key}>
                                 <td>{record.key}</td>
-                                <td>{record.createdAt.toLocaleString()}</td>
+                                <td>{new Date(record.createdAt).toLocaleString()}</td>
                                 <td>{record.allowed_domains.join(", ")}</td>
                                 <td>
-                                    {/* <button className="btn btn-secondary btn-sm" onClick={() => showEditModal(record.id)}>
-                                        Edit
-                                    </button>
-                                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(record.id)}>
-                                        Delete
-                                    </button> */}
+                                    {/* Action buttons */}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-                <Modal visible={visibleKeyCreateModal} onClose={closeKeyCreateModal} title="Create Key" buttonLabel="Create Key" description="Fill in the form below to create a new key.">
+
+                <Modal
+                    visible={visibleKeyCreateModal}
+                    onClose={closeKeyCreateModal}
+                    title="Create Key"
+                    description="Fill in the form below to create a new key."
+                >
                     <Form onSubmit={handleKeyCreation}>
-                        <AllowedDomainsField {...registerKeyCreate("allowed_domains")} />
+                        <AllowedDomainsField
+                            domainsName="allowed_domains"
+                            register={register}
+                            setValue={setValue}
+                            getValues={getValues}
+                        />
                         <div className="modal-action">
                             <button className="btn btn-primary" type="submit">
                                 Create Key
@@ -73,29 +88,19 @@ export const Keys: React.FC = () => {
                         </div>
                     </Form>
                 </Modal>
-                {/* <Modal {...editModalProps} title="Edit Key">
-                    <Form {...editFormProps}>
-                        <div className="form-control">
-                            <label className="label" htmlFor="key">Key</label>
-                            <input id="key" name="key" className="input input-bordered" required />
-                        </div>
-                        <div className="form-control">
-                            <label className="label" htmlFor="allowed_domains">Allowed Domains</label>
-                            <textarea id="allowed_domains" name="allowed_domains" className="textarea textarea-bordered" />
-                        </div>
-                        <div className="form-control mt-4">
-                            <button className="btn btn-primary" type="submit">
-                                Submit
-                            </button>
-                        </div>
-                    </Form>
-                </Modal> */}
             </div>
         </Layout>
     );
 };
 
-const Modal: React.FC<{ visible: boolean, onClose: () => void, title: string, description: string, buttonLabel: string, children: React.ReactNode }> = ({ visible, onClose, title, description, buttonLabel, children }) => {
+const Modal: React.FC<{
+    visible: boolean;
+    onClose: () => void;
+    title: string;
+    description: string;
+    buttonLabel?: string;
+    children: React.ReactNode;
+}> = ({ visible, onClose, title, description, children }) => {
     if (!visible) return null;
 
     return (
@@ -103,18 +108,16 @@ const Modal: React.FC<{ visible: boolean, onClose: () => void, title: string, de
             <div className="modal-box">
                 <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" onClick={onClose}>✕</button>
                 <h2 className="font-bold text-lg">{title}</h2>
-                {
-                    description && (
-                        <h3 className="text-sm text-gray-500 mb-4">{description}</h3>
-                    )
-                }
+                {description && (
+                    <h3 className="text-sm text-gray-500 mb-4">{description}</h3>
+                )}
                 {children}
             </div>
         </div>
     );
 };
 
-const Form: React.FC<{ onSubmit: (values: any) => void, children: React.ReactNode }> = ({ onSubmit, children }) => {
+const Form: React.FC<{ onSubmit: (values: any) => void; children: React.ReactNode }> = ({ onSubmit, children }) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const formData = new FormData(e.target as HTMLFormElement);
@@ -129,10 +132,12 @@ const Form: React.FC<{ onSubmit: (values: any) => void, children: React.ReactNod
     );
 };
 
-const AllowedDomainsField: React.FC<{ onChange: (value: any) => void }> = ({ onChange }) => {
-    const [domains, setDomains] = useState<string[]>([]);
+const AllowedDomainsField: React.FC<{ domainsName: string, register: any, setValue: any, getValues: any }> = ({ domainsName, register, setValue, getValues }) => {
     const [newDomain, setNewDomain] = useState("");
     const [error, setError] = useState<string | null>(null);
+
+    // Get current domains from form state
+    const domains: string[] = getValues(domainsName) || [];
 
     const isValidUrl = (url: string) => {
         const pattern = new RegExp(
@@ -164,21 +169,19 @@ const AllowedDomainsField: React.FC<{ onChange: (value: any) => void }> = ({ onC
         }
 
         const updatedDomains = [...domains, newDomain];
-        setDomains(updatedDomains);
-        onChange(updatedDomains);
+        setValue(domainsName, updatedDomains); // Update form state with the new list of domains
         setNewDomain("");
         setError(null);
     };
 
     const removeDomain = (domainToRemove: string) => {
         const updatedDomains = domains.filter(domain => domain !== domainToRemove);
-        setDomains(updatedDomains);
-        onChange(updatedDomains);
+        setValue(domainsName, updatedDomains); // Update form state after removing a domain
     };
 
     return (
         <div className="form-control mb-4">
-            <label className="text-sm" htmlFor="allowed_domains">
+            <label className="text-sm" htmlFor={domainsName}>
                 Allowed Domains
             </label>
             <span className="text-xs text-gray-500 block mb-2">
@@ -187,11 +190,11 @@ const AllowedDomainsField: React.FC<{ onChange: (value: any) => void }> = ({ onC
             </span>
             <div className="flex my-2 items-center">
                 <input
-                    id="new_domain"
+                    id={domainsName}
                     value={newDomain}
                     onChange={(e) => setNewDomain(e.target.value)}
                     className="input input-bordered flex-grow"
-                    placeholder="Add a domain"
+                    placeholder="https://example.com"
                 />
                 <button
                     type="button"
