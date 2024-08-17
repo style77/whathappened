@@ -56,10 +56,13 @@ export class KeysController {
   }
 
   @Get('/verify')
-  async verify(@Req() req: Request, @Headers('Authorization') apiKey: string) {
+  async verify(
+    @Req() req: Request,
+    @Headers('Authorization') publicKey: string,
+  ) {
     const referer = req.headers.referer || req.headers.origin;
 
-    const result = await this.keysService.verifyKey(apiKey, referer);
+    const result = await this.keysService.verifyKey(publicKey, referer);
     return {
       success: result,
     };
