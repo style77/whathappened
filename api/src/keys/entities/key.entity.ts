@@ -1,7 +1,7 @@
 import { User } from "src/users/entities/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
-@Entity()
+@Entity('keys')
 export class Key {
     @PrimaryColumn()
     key: string;
@@ -12,7 +12,7 @@ export class Key {
     @UpdateDateColumn({ type: 'timestamp without time zone', onUpdate: 'NOW()', nullable: true })
     updatedAt: Date
 
-    @OneToOne(type => User) 
+    @OneToOne(type => User)
     @JoinColumn()
     user: User
 
