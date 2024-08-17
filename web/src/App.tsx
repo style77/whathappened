@@ -3,7 +3,6 @@ import { DevtoolsPanel, DevtoolsProvider } from "@refinedev/devtools";
 import { RefineKbar, RefineKbarProvider } from "@refinedev/kbar";
 
 import routerBindings, {
-  CatchAllNavigate,
   DocumentTitleHandler,
   UnsavedChangesNotifier,
 } from "@refinedev/react-router-v6";
@@ -11,13 +10,9 @@ import dataProvider from "@refinedev/simple-rest";
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import "./App.css";
 import { authProvider } from "./authProvider";
-import { Dashboard } from "./pages/dashboard";
-import { Login } from "./pages/auth/LoginPage";
-import { Register } from "./pages/auth/RegisterPage";
 
 import axios from "axios";
 import { routes } from "./routes";
-import { Layout } from "./components/dashboard/Layout";
 import PageTitle from "./components/PageTitle";
 import { Keys } from "./pages/keys";
 
