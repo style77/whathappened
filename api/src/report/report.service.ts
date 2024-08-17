@@ -237,7 +237,11 @@ export class ReportService {
     }
 
     const report = await this.reportRepository.findOne({
-      where: { error: firstSessionError.error },
+      where: {
+        error: {
+          id: firstSessionError.error.id,
+        },
+      },
     });
 
     const reportDetailsResponse: ReportDetailsResponse = {

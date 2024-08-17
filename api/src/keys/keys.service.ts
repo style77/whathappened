@@ -40,7 +40,11 @@ export class KeysService {
     const { limit, offset } = params;
 
     return await this.keysRepository.find({
-      where: { user },
+      where: {
+        user: {
+          id: user.id,
+        },
+      },
       take: limit,
       skip: offset,
     });
