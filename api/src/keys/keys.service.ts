@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Key } from './entities/key.entity';
 import { Repository } from 'typeorm';
@@ -66,25 +66,34 @@ export class KeysService {
       return false;
     }
 
-    const normalizeDomain = (domain: string): string => {
-      return domain.replace(/(https?:\/\/)|(www\.)/, '');
+    const addDefaultProtocol = (url: string): string => {
+      return url.startsWith('http://') || url.startsWith('https://')
+        ? url
+        : `http://${url}`;
     };
 
     try {
-      const refererUrl = new URL(referer);
-      const refererDomain = normalizeDomain(refererUrl.host);
+      const refererURL = new URL(addDefaultProtocol(referer));
 
       for (const allowedDomain of keyObj.allowed_domains) {
-        const normalizedAllowedDomain = normalizeDomain(allowedDomain);
-        if (refererDomain === normalizedAllowedDomain) {
+        const allowedDomainURL = new URL(addDefaultProtocol(allowedDomain));
+
+        if (refererURL.protocol !== allowedDomainURL.protocol) {
+          continue;
+        }
+
+        if (
+          refererURL.hostname === allowedDomainURL.hostname &&
+          (refererURL.port === allowedDomainURL.port || !allowedDomainURL.port)
+        ) {
           return true;
         }
       }
+
+      return false;
     } catch (error) {
-      console.error('Error parsing URL:', error);
+      Logger.error(`Error verifying key: ${error}`);
       return false;
     }
-
-    return false;
   }
 }
