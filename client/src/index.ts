@@ -53,6 +53,7 @@ class WhatHappened implements IWhatHappened {
     private interactionTracker: InteractionTracker;
     private mouseLogger: MouseMovementLogger;
     private interactionLogger: InteractionLogger;
+    private setupCompleted: boolean = false; // Flag to ensure setup is only done once
 
     config: IConfig = defaultConfig;
 
@@ -83,42 +84,59 @@ class WhatHappened implements IWhatHappened {
     }
 
     private async setup(): Promise<void> {
+        if (this.setupCompleted) return; // Prevent repeated setup
+
         const isKeyValid = await this.verifyApiKey();
         if (!isKeyValid) {
             throw new Error("Invalid API Key or current domain is not allowed to use the API Key.");
         }
+        this.setupCompleted = true; // Mark setup as complete
     }
 
     private async setupAndStart(): Promise<void> {
         await this.setup();
-        this.start();
+        await this.start();
     }
 
     async start(easySetup: boolean = true): Promise<void> {
-        // await this.setupAndStart(); //  todo: uncomment this line
+        if (this.setupCompleted) return;
+
+        await this.setupAndStart();
 
         this.mouseTracker.startTracking();
         this.interactionTracker.trackInteractions();
 
         if (easySetup) {
-            window.addEventListener('error', (errorEvent) => this.onErrorOccurred({
-                isTrusted: errorEvent.isTrusted,
-                message: errorEvent.message,
-                filename: errorEvent.filename,
-                lineno: errorEvent.lineno,
-                colno: errorEvent.colno,
-                errorStack: errorEvent.error.stack,
+            const handleErrorEvent = async (errorEvent: ErrorEvent) => {
+                await this.onErrorOccurred({
+                    isTrusted: errorEvent.isTrusted,
+                    message: errorEvent.message,
+                    filename: errorEvent.filename,
+                    lineno: errorEvent.lineno,
+                    colno: errorEvent.colno,
+                    errorStack: errorEvent.errorStack || '',
+                    timestamp: Date.now(),
+                });
+            };
+
+            window.addEventListener('error', async (error) => handleErrorEvent({
+                isTrusted: error.isTrusted,
+                message: error.message,
+                filename: error.filename,
+                lineno: error.lineno,
+                colno: error.colno,
+                errorStack: error.error.stack || '',
                 timestamp: Date.now(),
             }));
         }
     }
 
-    onErrorOccurred(errorEvent: ErrorEvent): void {
+    async onErrorOccurred(errorEvent: ErrorEvent): Promise<void> {
         const mouseMovements = this.mouseLogger.getMovements();
         const interactions = this.interactionLogger.getInteractions();
 
         if (mouseMovements.length > 0 || interactions.length > 0) {
-            this.sendDataToServer({ mouseMovements, interactions, error: errorEvent });
+            await this.sendDataToServer({ mouseMovements, interactions, error: errorEvent });
             this.mouseLogger.clearMovements();
             this.interactionLogger.clearInteractions();
         }
@@ -174,11 +192,11 @@ class WhatHappened implements IWhatHappened {
         };
     }
 
-    private sendDataToServer(data: {
+    private async sendDataToServer(data: {
         mouseMovements: MouseMovement[],
         interactions: UserInteraction[],
         error: ErrorEvent,
-    }): void {
+    }): Promise<void> {
         const errorID = this.generateErrorId(data.error);
 
         const headers = {
@@ -204,7 +222,15 @@ class WhatHappened implements IWhatHappened {
             interactions: Array.from(compressedInteractions),
         };
 
-        console.log(body)
+        const response = await fetch(`${this.config.API_URL}/report/`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body),
+        });
+
+        if (response.status !== 200) {
+            console.error("Failed to send data to server.");
+        }
     }
 }
 
