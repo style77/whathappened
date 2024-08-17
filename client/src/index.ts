@@ -48,8 +48,8 @@ class WhatHappened implements IWhatHappened {
     }
 
     private async verifyApiKey(): Promise<boolean> {
-        const response = await fetch(`${this.config.API_URL}/keys/verify`, {
-            method: 'POST',
+        const response = await fetch(`${this.config.API_URL}/keys/verify/`, {
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': this.publicKey,
@@ -73,7 +73,7 @@ class WhatHappened implements IWhatHappened {
     }
 
     async start(easySetup: boolean = true): Promise<void> {
-        // await this.setupAndStart();  todo: uncomment this line
+        await this.setupAndStart(); //  todo: uncomment this line
 
         this.mouseTracker.startTracking();
         this.interactionTracker.trackInteractions();
