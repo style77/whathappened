@@ -12,7 +12,7 @@ type ErrorEvent = {
     filename: string;
     lineno: number;
     colno: number;
-    error: Error;
+    errorStack: string;
     timestamp: number;
 }
 
@@ -107,7 +107,7 @@ class WhatHappened implements IWhatHappened {
                 filename: errorEvent.filename,
                 lineno: errorEvent.lineno,
                 colno: errorEvent.colno,
-                error: errorEvent.error,
+                errorStack: errorEvent.error.stack,
                 timestamp: Date.now(),
             }));
         }
@@ -196,7 +196,7 @@ class WhatHappened implements IWhatHappened {
                 filename: data.error.filename,
                 lineno: data.error.lineno,
                 colno: data.error.colno,
-                error: data.error.error,
+                errorStack: data.error.errorStack,
                 timestamp: data.error.timestamp,
             },
             session: this.getSessionData(),
