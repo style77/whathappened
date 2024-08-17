@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { KeysModule } from './keys/keys.module';
 import { Key } from './keys/entities/key.entity';
+import { DynamicCorsMiddleware } from './middlewares/dynamic-cors.middleware';
 
 @Module({
   imports: [
@@ -31,4 +32,8 @@ import { Key } from './keys/entities/key.entity';
     KeysModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(DynamicCorsMiddleware).forRoutes('*');
+  }
+}
