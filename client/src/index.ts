@@ -1,3 +1,4 @@
+import pako from "pako";
 import type { IConfig } from "./config";
 import defaultConfig from "./config";
 import InteractionLogger, { UserInteraction } from "./loggers/interaction";
@@ -13,6 +14,27 @@ type ErrorEvent = {
     colno: number;
     error: Error;
     timestamp: number;
+}
+
+type Session = {
+    id: string;
+    user: string;
+    ua: string;
+    url: string;
+    referrer: string;
+    screen: {
+        width: number;
+        height: number;
+    };
+    viewport: {
+        width: number;
+        height: number;
+    };
+    time: {
+        startedAt: number;
+        endedAt: number;
+        duration: number;
+    };
 }
 
 interface IWhatHappened {
@@ -73,7 +95,7 @@ class WhatHappened implements IWhatHappened {
     }
 
     async start(easySetup: boolean = true): Promise<void> {
-        await this.setupAndStart(); //  todo: uncomment this line
+        // await this.setupAndStart(); //  todo: uncomment this line
 
         this.mouseTracker.startTracking();
         this.interactionTracker.trackInteractions();
@@ -121,19 +143,51 @@ class WhatHappened implements IWhatHappened {
         return btoa(errorString);
     }
 
+    private compressData(data: any): Uint8Array {
+        const jsonString = JSON.stringify(data);
+        return pako.deflate(jsonString, { level: 9 });
+    };
+
+    private getSessionData(): Session {
+        const userID = this.getUserID();
+        const sessionID = this.sessionID;
+
+        return {
+            id: sessionID,
+            user: userID,
+            ua: navigator.userAgent,
+            url: window.location.href,
+            referrer: document.referrer,
+            screen: {
+                width: window.screen.width,
+                height: window.screen.height,
+            },
+            viewport: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+            },
+            time: {
+                startedAt: this.sessionStartedAt,
+                endedAt: Date.now(),
+                duration: Date.now() - this.sessionStartedAt,
+            }
+        };
+    }
+
     private sendDataToServer(data: {
         mouseMovements: MouseMovement[],
         interactions: UserInteraction[],
         error: ErrorEvent,
     }): void {
-        const userID = this.getUserID();
         const errorID = this.generateErrorId(data.error);
-        const sessionID = this.sessionID;
 
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': this.publicKey
         };
+
+        const compressedMovements = this.compressData(data.mouseMovements);
+        const compressedInteractions = this.compressData(data.interactions);
 
         const body = {
             error: {
@@ -145,29 +199,12 @@ class WhatHappened implements IWhatHappened {
                 error: data.error.error,
                 timestamp: data.error.timestamp,
             },
-            session: {
-                id: sessionID,
-                user: userID,
-                ua: navigator.userAgent,
-                url: window.location.href,
-                referrer: document.referrer,
-                screen: {
-                    width: window.screen.width,
-                    height: window.screen.height,
-                },
-                viewport: {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                },
-                time: {
-                    startedAt: this.sessionStartedAt,
-                    endedAt: Date.now(),
-                    duration: Date.now() - this.sessionStartedAt,
-                }
-            },
-            mouseMovements: data.mouseMovements,
-            interactions: data.interactions,
+            session: this.getSessionData(),
+            mouseMovements: Array.from(compressedMovements),
+            interactions: Array.from(compressedInteractions),
         };
+
+        console.log(body)
     }
 }
 
