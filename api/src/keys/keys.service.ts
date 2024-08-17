@@ -14,7 +14,7 @@ export class KeysService {
   constructor(
     @InjectRepository(Key)
     private keysRepository: Repository<Key>,
-  ) { }
+  ) {}
 
   private static generateKey(): string {
     return (
@@ -66,10 +66,25 @@ export class KeysService {
       return false;
     }
 
-    if (!keyObj.allowed_domains.includes(referer)) {
+    const normalizeDomain = (domain: string): string => {
+      return domain.replace(/(https?:\/\/)|(www\.)/, '');
+    };
+
+    try {
+      const refererUrl = new URL(referer);
+      const refererDomain = normalizeDomain(refererUrl.host);
+
+      for (const allowedDomain of keyObj.allowed_domains) {
+        const normalizedAllowedDomain = normalizeDomain(allowedDomain);
+        if (refererDomain === normalizedAllowedDomain) {
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing URL:', error);
       return false;
     }
 
-    return true;
+    return false;
   }
 }
