@@ -19,6 +19,7 @@ import axios from "axios";
 import { routes } from "./routes";
 import { Layout } from "./components/dashboard/Layout";
 import PageTitle from "./components/PageTitle";
+import { Keys } from "./pages/keys";
 
 const axiosInstance = axios.create();
 
@@ -30,7 +31,8 @@ export { axiosInstance };
 
 const resources = [
   {
-    name: "keys"
+    name: "keys",
+    list: Keys
   }
 ]
 
