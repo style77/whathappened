@@ -157,7 +157,7 @@ class WhatHappened implements IWhatHappened {
     }
 
     private generateErrorId(errorEvent: ErrorEvent): string {
-        const errorString = `${errorEvent.message}-${errorEvent.filename}-${errorEvent.lineno}-${errorEvent.colno}-${errorEvent.timestamp}`;
+        const errorString = `${errorEvent.message}-${errorEvent.filename}-${errorEvent.lineno}-${errorEvent.colno}`;
         return btoa(errorString);
     }
 
@@ -197,8 +197,6 @@ class WhatHappened implements IWhatHappened {
         interactions: UserInteraction[],
         error: ErrorEvent,
     }): Promise<void> {
-        const errorID = this.generateErrorId(data.error);
-
         const headers = {
             'Content-Type': 'application/json',
             'Authorization': this.publicKey
@@ -209,7 +207,7 @@ class WhatHappened implements IWhatHappened {
 
         const body = {
             error: {
-                id: errorID,
+                id: this.generateErrorId(data.error),
                 message: data.error.message,
                 filename: data.error.filename,
                 lineno: data.error.lineno,
