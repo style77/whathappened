@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, QueryRunner, DataSource } from 'typeorm';
 import { SessionError } from './entities/session-error.entity';
 import { Session } from './entities/session.entity';
 import { Error } from './entities/error.entity';
-import pako from 'pako';
+import { inflate } from 'pako';
 import { Key } from 'src/keys/entities/key.entity';
+import { Report } from './entities/report.entity';
+import { CreateReportDTO } from './dto/report.dto';
 import {
   ReportDetailsResponse,
   ReportResponse,
 } from './responses/report.response';
-import { Report } from './entities/report.entity';
 
 @Injectable()
 export class ReportService {
@@ -26,7 +27,64 @@ export class ReportService {
 
     @InjectRepository(Report)
     private reportRepository: Repository<Report>,
-  ) { }
+
+    private dataSource: DataSource,
+  ) {}
+
+  private static decompressUint8Array(compressedData: Uint8Array): any {
+    return JSON.parse(inflate(compressedData, { to: 'string' }));
+  }
+
+  async createReportTransaction(
+    createReportDto: CreateReportDTO,
+    publicKey: Key,
+  ): Promise<void> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const error = await this.getOrCreateError(
+        createReportDto.error.id,
+        createReportDto.error.message,
+        createReportDto.error.filename,
+        createReportDto.error.lineno,
+        createReportDto.error.colno,
+        createReportDto.error.errorStack,
+        publicKey,
+        queryRunner,
+      );
+
+      const session = await this.createSession(
+        createReportDto.session.id,
+        createReportDto.session.user,
+        createReportDto.session.ua,
+        createReportDto.session.url,
+        createReportDto.session.referrer,
+        createReportDto.session.screen,
+        createReportDto.session.viewport,
+        queryRunner,
+      );
+
+      await this.createSessionError(
+        session,
+        error,
+        createReportDto.mouseMovements,
+        createReportDto.interactions,
+        new Date(createReportDto.session.time.startedAt),
+        new Date(createReportDto.session.time.endedAt),
+        createReportDto.session.time.duration,
+        queryRunner,
+      );
+
+      await queryRunner.commitTransaction();
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 
   async createError(
     id: string,
@@ -36,6 +94,7 @@ export class ReportService {
     colno: number,
     errorStack: string,
     key: Key,
+    queryRunner: QueryRunner,
   ): Promise<Error> {
     const error = this.errorRepository.create({
       id,
@@ -47,7 +106,7 @@ export class ReportService {
       key,
     });
 
-    return this.errorRepository.save(error);
+    return queryRunner.manager.save(error);
   }
 
   async getOrCreateError(
@@ -58,8 +117,11 @@ export class ReportService {
     colno: number,
     errorStack: string,
     publicKey: Key,
-  ) {
-    const error = await this.errorRepository.findOne({ where: { id } });
+    queryRunner: QueryRunner,
+  ): Promise<Error> {
+    const error = await queryRunner.manager.findOne(Error, {
+      where: { id },
+    });
     if (error) {
       return error;
     }
@@ -72,6 +134,7 @@ export class ReportService {
       colno,
       errorStack,
       publicKey,
+      queryRunner,
     );
   }
 
@@ -83,6 +146,7 @@ export class ReportService {
     referrer: string,
     screen: { width: number; height: number },
     viewport: { width: number; height: number },
+    queryRunner: QueryRunner,
   ): Promise<Session> {
     const session = this.sessionRepository.create({
       id,
@@ -94,12 +158,7 @@ export class ReportService {
       viewport,
     });
 
-    return this.sessionRepository.save(session);
-  }
-
-  private static decompressUint8Array(compressedData: Uint8Array): any {
-    const decompressedData = pako.inflate(compressedData, { to: 'string' });
-    return JSON.parse(decompressedData);
+    return queryRunner.manager.save(session);
   }
 
   async createSessionError(
@@ -110,6 +169,7 @@ export class ReportService {
     startedAt: Date,
     endedAt: Date,
     duration: number,
+    queryRunner: QueryRunner,
   ): Promise<SessionError> {
     const sessionError = new SessionError();
     sessionError.session = session;
@@ -132,7 +192,7 @@ export class ReportService {
     sessionError.endedAt = endedAt;
     sessionError.duration = duration;
 
-    return this.sessionErrorRepository.save(sessionError);
+    return queryRunner.manager.save(sessionError);
   }
 
   async getAllReports(

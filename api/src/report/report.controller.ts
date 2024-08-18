@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Post,
   Query,
   Req,
@@ -21,7 +22,7 @@ export class ReportController {
   constructor(
     private reportService: ReportService,
     private keysService: KeysService,
-  ) { }
+  ) {}
 
   @UseGuards(PublicKeyGuard)
   @Post('/')
@@ -37,36 +38,18 @@ export class ReportController {
       return response.status(401).json({ message: 'Unauthorized' });
     }
 
-    const error = await this.reportService.getOrCreateError(
-      createReportDto.error.id,
-      createReportDto.error.message,
-      createReportDto.error.filename,
-      createReportDto.error.lineno,
-      createReportDto.error.colno,
-      createReportDto.error.errorStack,
-      publicKey,
-    );
-    const session = await this.reportService.createSession(
-      createReportDto.session.id,
-      createReportDto.session.user,
-      createReportDto.session.ua,
-      createReportDto.session.url,
-      createReportDto.session.referrer,
-      createReportDto.session.screen,
-      createReportDto.session.viewport,
-    );
-
-    const sessionError = await this.reportService.createSessionError(
-      session,
-      error,
-      createReportDto.mouseMovements,
-      createReportDto.interactions,
-      new Date(createReportDto.session.time.startedAt),
-      new Date(createReportDto.session.time.endedAt),
-      createReportDto.session.time.duration,
-    );
-
-    return sessionError;
+    try {
+      await this.reportService.createReportTransaction(
+        createReportDto,
+        publicKey,
+      );
+      return response
+        .status(201)
+        .json({ message: 'Report created successfully' });
+    } catch (error) {
+      Logger.error('Error creating report:', error);
+      return response.status(500).json({ message: 'Internal Server Error' });
+    }
   }
 
   @UseGuards(JwtAuthGuard)
