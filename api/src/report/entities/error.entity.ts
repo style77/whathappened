@@ -14,7 +14,6 @@ import { SessionError } from './session-error.entity';
 import { Key } from 'src/keys/entities/key.entity';
 
 @Entity('errors')
-@Unique(['message', 'filename', 'lineno', 'colno'])
 export class Error {
   @PrimaryColumn()
   id: string;
@@ -39,12 +38,6 @@ export class Error {
 
   @UpdateDateColumn()
   lastOccurredAt: Date;
-
-  @BeforeInsert()
-  generateErrorId() {
-    const errorString = `${this.message}-${this.filename}-${this.lineno}-${this.colno}-${Date.now()}`;
-    this.id = Buffer.from(errorString).toString('base64');
-  }
 
   @OneToMany(() => SessionError, (sessionError) => sessionError.error)
   sessionErrors: SessionError[];
