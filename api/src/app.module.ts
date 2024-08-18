@@ -9,6 +9,10 @@ import { Key } from './keys/entities/key.entity';
 import { DynamicCorsMiddleware } from './middlewares/dynamic-cors.middleware';
 import { VisualizerModule } from './microservices/visualizer/visualizer.module';
 import { ReportModule } from './report/report.module';
+import { SessionError } from './report/entities/session-error.entity';
+import { Session } from './report/entities/session.entity';
+import { Report } from './report/entities/report.entity';
+import { Error } from './report/entities/error.entity';
 
 @Module({
   imports: [
@@ -23,7 +27,7 @@ import { ReportModule } from './report/report.module';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
-      entities: [User, Key],
+      entities: [User, Key, Error, Session, SessionError, Report],
       synchronize: true,
       extra: {
         ssl: true,
