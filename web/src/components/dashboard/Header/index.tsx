@@ -23,15 +23,15 @@ export const Header: React.FC = () => {
 
     return (
         <>
-            <div className="navbar sticky top-0 bg-base-100  z-10 shadow-md ">
+            <div className="navbar sticky top-0 bg-black custom-bg before:content-[''] before:bg-transparent before:bg-repeat before:bg-[length:182px] before:opacity-[0.12] before:top-[0] before:left-[0] before:absolute before:h-full before:w-full z-10 text-white p-4">
                 <div className="flex-1">
-                    <label htmlFor="left-sidebar-drawer" className="btn btn-primary drawer-button lg:hidden">
-                        <Bars3Icon className="h-5 inline-block w-5" /></label>
+                    <label htmlFor="left-sidebar-drawer" className="btn border-0 drawer-button lg:hidden">
+                        <Bars3Icon className="h-5 inline-block w-5" />
+                    </label>
                     <h1 className="text-2xl font-semibold ml-2">{pageTitle}</h1>
                 </div>
 
-                <div className="flex-none ">
-
+                <div className="flex flex-row items-center justify-center">
                     {/* Multiple theme selection, uncomment this if you want to enable multiple themes selection, 
                 also includes corporate and retro themes in tailwind.config file */}
 
@@ -52,20 +52,16 @@ export const Header: React.FC = () => {
                     </label> */}
 
 
-                    {/* Notification icon */}
-                    <button className="btn btn-ghost ml-4  btn-circle">
+                    <button className="btn btn-ghost ml-2 btn-circle">
                         <div className="indicator">
                             <BellIcon className="h-6 w-6" />
                             {3 > 0 ? <span className="indicator-item badge badge-primary badge-sm">{3}</span> : null}
                         </div>
                     </button>
-
-
-                    {/* Profile icon, opening menu on click */}
-                    <div className="dropdown dropdown-end ml-4">
+                    <div className="dropdown dropdown-end ml-2">
                         <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
                             <div className="w-10 rounded-full">
-                                <UserIcon />
+                                <UserIcon className="h-6 w-6 mt-2" />
                             </div>
                         </label>
                         <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
