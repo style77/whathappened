@@ -19,6 +19,7 @@ import axios from "axios";
 import { routes } from "./routes";
 import { Layout } from "./components/dashboard/Layout";
 import PageTitle from "./components/PageTitle";
+import { Home } from "./pages/home";
 
 const axiosInstance = axios.create();
 
@@ -37,9 +38,8 @@ const resources = [
 function App() {
   return (
     <BrowserRouter>
-      <GitHubBanner />
       <RefineKbarProvider>
-        <DevtoolsProvider>
+        {/* <DevtoolsProvider> */}
           <Refine
             dataProvider={dataProvider(process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://api.whathappened.dev", axiosInstance)}
             routerProvider={routerBindings}
@@ -53,7 +53,7 @@ function App() {
             resources={resources}
           >
             <Routes>
-              <Route index element={<WelcomePage />} />
+              <Route index element={<Home />} />
               <Route
                 element={
                   <Outlet />
@@ -78,8 +78,8 @@ function App() {
             <UnsavedChangesNotifier />
             <DocumentTitleHandler />
           </Refine>
-          <DevtoolsPanel />
-        </DevtoolsProvider>
+          {/* <DevtoolsPanel /> */}
+        {/* </DevtoolsProvider> */}
       </RefineKbarProvider>
     </BrowserRouter>
   );
