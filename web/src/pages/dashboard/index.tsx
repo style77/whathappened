@@ -13,7 +13,7 @@ const testStats = [
 export const Dashboard: React.FC = () => {
   return (
     <Layout>
-      <div className="grid lg:grid-cols-4 mt-2 md:grid-cols-2 grid-cols-1 gap-6">
+      <div className="grid lg:grid-cols-4 mt-2 md:grid-cols-2 grid-cols-1 gap-6 ">
         {
           testStats.map((stat, i) => (
             <DashboardStatsCard
